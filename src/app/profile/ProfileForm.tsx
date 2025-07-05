@@ -4,13 +4,13 @@ import { useState, useTransition, useRef, useEffect } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import Link from 'next/link';
 
-import { getAiProfileUpdate } from './actions';
+import { getAiProfileUpdate, transcribeAudio, synthesizeSpeech } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, User, Bot, Sparkles, Loader2 } from 'lucide-react';
+import { Mic, MicOff, Send, User, Bot, Sparkles, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 type ChatMessage = {
@@ -18,9 +18,14 @@ type ChatMessage = {
   content: string;
 };
 
-const initialState = {
+const initialState: {
+    error: string | null;
+    updatedProfileData: string;
+    assistantResponse?: string;
+} = {
   error: null,
   updatedProfileData: 'Your profile is empty. Start by telling the AI about your skills!',
+  assistantResponse: '',
 };
 
 function SubmitButton() {
@@ -37,6 +42,12 @@ export function ProfileForm() {
   const [state, formAction] = useFormState(getAiProfileUpdate, initialState);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, startTranscribing] = useTransition();
+  const [isSynthesizing, startSynthesizing] = useTransition();
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -59,11 +70,81 @@ export function ProfileForm() {
   };
   
   useEffect(() => {
-    if (state.updatedProfileData && chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
-        setChatHistory(prev => [...prev, { role: 'assistant', content: 'Thanks! I have updated your profile based on our conversation. You can see it on the right. Is there anything else?' }]);
+    if (state.assistantResponse && chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
+        setChatHistory(prev => [...prev, { role: 'assistant', content: state.assistantResponse! }]);
+
+        startSynthesizing(async () => {
+          const formData = new FormData();
+          formData.append('text', state.assistantResponse!);
+          const result = await synthesizeSpeech(formData);
+          if (result.error) {
+              toast({ variant: 'destructive', title: 'Speech Error', description: result.error });
+          } else if (result.audioDataUri && audioRef.current) {
+              audioRef.current.src = result.audioDataUri;
+              audioRef.current.play().catch(e => console.error("Audio playback failed", e));
+          }
+        });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.updatedProfileData]);
+  }, [state.assistantResponse, state.updatedProfileData]);
+
+  const startRecording = async () => {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorderRef.current = new MediaRecorder(stream);
+        const audioChunks: Blob[] = [];
+
+        mediaRecorderRef.current.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+
+        mediaRecorderRef.current.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = () => {
+                const base64data = reader.result as string;
+                
+                startTranscribing(async () => {
+                    const formData = new FormData();
+                    formData.append('audioDataUri', base64data);
+                    const result = await transcribeAudio(formData);
+                    if (result.error) {
+                        toast({ variant: 'destructive', title: 'Transcription Error', description: result.error });
+                    } else if (result.transcript) {
+                        const transcriptFormData = new FormData(formRef.current!);
+                        transcriptFormData.set('query', result.transcript);
+                        handleFormSubmit(transcriptFormData);
+                    }
+                });
+            };
+            stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorderRef.current.start();
+        setIsRecording(true);
+    } catch (err) {
+        toast({ variant: 'destructive', title: 'Microphone Error', description: 'Could not access microphone. Please grant permission and try again.' });
+        console.error("Mic error:", err);
+    }
+  };
+
+  const stopRecording = () => {
+      if (mediaRecorderRef.current && isRecording) {
+          mediaRecorderRef.current.stop();
+          setIsRecording(false);
+      }
+  };
+
+  const handleRecordClick = () => {
+      if (isRecording) {
+          stopRecording();
+      } else {
+          startRecording();
+      }
+  };
+
+  const isProcessing = useFormStatus().pending || isTranscribing || isSynthesizing;
 
   return (
     <div className="grid md:grid-cols-2 gap-8">
@@ -81,7 +162,7 @@ export function ProfileForm() {
                 </Avatar>
                 <div className="bg-muted p-3 rounded-lg max-w-[80%]">
                   <p className="font-bold">TeamForge Bot</p>
-                  <p className="text-sm">Hello! Tell me about your skills, interests, or what you'd like to build. For example: "I'm a frontend developer skilled in React and Next.js. I'm interested in building AI apps."</p>
+                  <p className="text-sm">Hello! Tell me about your skills, interests, or what you'd like to build. You can type or use the microphone to talk to me.</p>
                 </div>
               </div>
               {chatHistory.map((message, index) => (
@@ -102,15 +183,31 @@ export function ProfileForm() {
                   )}
                 </div>
               ))}
+              {isProcessing && (
+                <div className="flex items-start gap-4">
+                   <Avatar>
+                      <AvatarFallback><Bot /></AvatarFallback>
+                    </Avatar>
+                    <div className="bg-muted p-3 rounded-lg max-w-[80%] flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin"/>
+                      <p className="text-sm text-muted-foreground">Thinking...</p>
+                    </div>
+                </div>
+              )}
             </div>
           </ScrollArea>
         </CardContent>
         <CardFooter>
           <form ref={formRef} action={handleFormSubmit} className="flex w-full items-center space-x-2">
-            <Input name="query" placeholder="Type your message..." autoComplete="off" />
+            <Input name="query" placeholder="Type or record your message..." autoComplete="off" disabled={isProcessing} />
             <input type="hidden" name="existingProfileData" value={state.updatedProfileData} />
+            <Button type="button" size="icon" variant="outline" onClick={handleRecordClick} disabled={useFormStatus().pending || isSynthesizing}>
+              {isRecording ? <MicOff className="h-4 w-4 text-destructive animate-pulse" /> : isTranscribing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}
+              <span className="sr-only">{isRecording ? "Stop Recording" : "Start Recording"}</span>
+            </Button>
             <SubmitButton />
           </form>
+          <audio ref={audioRef} className="hidden" />
         </CardFooter>
       </Card>
       <Card>

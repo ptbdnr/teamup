@@ -1,6 +1,8 @@
 'use server';
 
 import { profileDataCollection } from '@/ai/flows/profile-data-collection';
+import { transcribeAudio as transcribeAudioFlow } from '@/ai/flows/speech-to-text';
+import { textToSpeech } from '@/ai/flows/text-to-speech';
 import { z } from 'zod';
 
 const formSchema = z.object({
@@ -16,8 +18,8 @@ export async function getAiProfileUpdate(prevState: any, formData: FormData) {
 
   if (!validatedFields.success) {
     return {
+      ...prevState,
       error: 'Invalid input.',
-      updatedProfileData: prevState.updatedProfileData || '',
     };
   }
 
@@ -26,12 +28,61 @@ export async function getAiProfileUpdate(prevState: any, formData: FormData) {
     return {
       error: null,
       updatedProfileData: result.updatedProfileData,
+      assistantResponse: result.assistantResponse,
     };
   } catch (error) {
     console.error('AI flow error:', error);
     return {
+      ...prevState,
       error: 'An error occurred while talking to the AI. Please try again.',
-      updatedProfileData: prevState.updatedProfileData || '',
     };
   }
+}
+
+const transcribeSchema = z.object({
+  audioDataUri: z.string(),
+});
+
+export async function transcribeAudio(formData: FormData) {
+    const validatedFields = transcribeSchema.safeParse({
+        audioDataUri: formData.get('audioDataUri'),
+    });
+
+    if (!validatedFields.success) {
+        return { error: 'Invalid audio data.' };
+    }
+
+    try {
+        const { transcript } = await transcribeAudioFlow(validatedFields.data);
+        return { transcript, error: null };
+    } catch (error) {
+        console.error('Transcription error:', error);
+        return { error: 'Failed to transcribe audio.' };
+    }
+}
+
+const speechSchema = z.object({
+    text: z.string(),
+});
+
+export async function synthesizeSpeech(formData: FormData) {
+    const validatedFields = speechSchema.safeParse({
+        text: formData.get('text'),
+    });
+    
+    if (!validatedFields.success) {
+        return { error: 'Invalid text for speech synthesis.' };
+    }
+
+    if (!validatedFields.data.text) {
+        return { audioDataUri: null, error: null };
+    }
+
+    try {
+        const { media } = await textToSpeech(validatedFields.data.text);
+        return { audioDataUri: media, error: null };
+    } catch (error) {
+        console.error('TTS error:', error);
+        return { error: 'Failed to synthesize speech.' };
+    }
 }
