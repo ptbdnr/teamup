@@ -7,6 +7,24 @@ export type Member = {
   interests: string[];
   discord: string;
   isYou?: boolean;
+  graphCoordinate?: {
+    result: number; // 0-1
+    method: number; // 0-1
+    social: number; // 0-1
+  }
+};
+
+
+export type Project = {
+  id: string;
+  name: string;
+  description: string;
+  teamId?: string; // Optional foreign key to Team
+  graphCoordinates: {
+    result: number; // 0-1
+    method: number; // 0-1
+    social: number; // 0-1
+  };
 };
 
 export type Team = {
@@ -15,6 +33,42 @@ export type Team = {
   description: string;
   members: Member[];
 };
+
+export const projects: Project[] = [
+  {
+    id: 'innovators-app',
+    name: 'Innovators AI App',
+    description: 'A web application showcasing the AI capabilities built by the team.',
+    teamId: 'innovators',
+    graphCoordinates: {
+      result: 0.7,
+      method: 0.6,
+      social: 0.1,
+    }
+  },
+  {
+    id: 'data-wizards-dashboard',
+    name: 'Data Wizards Dashboard',
+    description: 'Interactive dashboards for visualizing data insights.',
+    teamId: 'data-wizards',
+    graphCoordinates: {
+      result: 0.1,
+      method: 0.9,
+      social: 0.1,
+    }
+  },
+  {
+    id: 'cloud-pioneers-platform',
+    name: 'Cloud Pioneers Platform',
+    description: 'A scalable cloud platform for deploying and managing applications.',
+    teamId: 'cloud-pioneers',
+    graphCoordinates: {
+      result: 0.5,
+      method: 0.5,
+      social: 0.7,
+    }
+  },
+]
 
 export const teams: Team[] = [
   {
