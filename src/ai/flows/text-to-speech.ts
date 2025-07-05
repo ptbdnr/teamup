@@ -9,7 +9,7 @@
 import {ai} from '@/ai/genkit';
 import {googleAI} from '@genkit-ai/googleai';
 import {z} from 'genkit/zod';
-import wav from 'wav';
+import * as wav from 'wav';
 
 async function toWav(
   pcmData: Buffer,
