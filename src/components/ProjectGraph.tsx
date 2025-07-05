@@ -40,9 +40,9 @@ const ProjectGraph: React.FC<ProjectGraphProps> = ({ projects: projects }) => {
 
     return (project: Project) => {
       // Assuming scores are normalized to 0-1 scale.
-      const socialFocusNorm = project.graphCoordinates.social;
-      const resultFocusNorm = project.graphCoordinates.result;
-      const methodFocusNorm = project.graphCoordinates.method;
+      const socialFocusNorm = project.graphCoordinates?.social || 0;
+      const resultFocusNorm = project.graphCoordinates?.result || 0;
+      const methodFocusNorm = project.graphCoordinates?.method || 0;
 
       // Simple sum for weighting, ideally the scores would add up to a constant for positioning within a standard triangle,
       // but SDI can have varying strengths. We'll adjust based on total "energy".
@@ -104,13 +104,13 @@ const ProjectGraph: React.FC<ProjectGraphProps> = ({ projects: projects }) => {
           key={project.id}
           className="absolute p-2 bg-blue-500 bg-opacity-70 rounded-full cursor-pointer hover:bg-blue-600 transition-all duration-200 shadow-md"
           onClick={() => handleProjectClick(project)}
-          title={`${project.name}\nSocial & Emotion: ${project.graphCoordinates.social}\nResult & Control: ${project.graphCoordinates.result}\nMethod & Tech: ${project.graphCoordinates.method}`}
+          title={`${project.name}`}
           style={{
             left: `calc(${getTrianglePosition(project).x}% - 16px)`, // Adjust by half element width
             top: `calc(${getTrianglePosition(project).y}% - 16px)`, // Adjust by half element height
           }}
         >
-          {project.name}
+          🎯
         </div>
       ))}
 
@@ -129,7 +129,7 @@ const ProjectGraph: React.FC<ProjectGraphProps> = ({ projects: projects }) => {
                     <CardDescription>Social & Emotion</CardDescription>
                     <CardTitle className="text-2xl flex items-center">
                       <PersonStandingIcon className="w-5 h-5 mr-2 text-blue-500" />
-                      {selectedProject.graphCoordinates.social}
+                      {selectedProject.graphCoordinates?.social}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -141,7 +141,7 @@ const ProjectGraph: React.FC<ProjectGraphProps> = ({ projects: projects }) => {
                     <CardDescription>Results & Control</CardDescription>
                     <CardTitle className="text-2xl flex items-center">
                       <TrophyIcon className="w-5 h-5 mr-2 text-green-500" />
-                      {selectedProject.graphCoordinates.result}
+                      {selectedProject.graphCoordinates?.result}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -153,7 +153,7 @@ const ProjectGraph: React.FC<ProjectGraphProps> = ({ projects: projects }) => {
                     <CardDescription>Method & Tech</CardDescription>
                     <CardTitle className="text-2xl flex items-center">
                       <CodeIcon className="w-5 h-5 mr-2 text-purple-500" />
-                      {selectedProject.graphCoordinates.method}
+                      {selectedProject.graphCoordinates?.method}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>

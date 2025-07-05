@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { AllTeamsSkillsChart } from "@/components/AllTeamsSkillsChart";
 import { teams, Team, projects } from "@/lib/team-data"; // Import Team type
-import { Users } from "lucide-react";
+import { User, Users, Target } from "lucide-react";
 import ProjectGraph from "@/components/ProjectGraph"; // Import TeamsMap
 
 export default function TeamsGraphPage() {
@@ -15,21 +15,27 @@ export default function TeamsGraphPage() {
       <Header />
       <main className="flex-1 container mx-auto p-4 md:p-8">
         <div className="mb-8">
+            <h2 className="text-3xl font-bold flex items-center gap-3 mb-4">
+                <Target className="h-8 w-8 text-primary"/>
+                Project Ideas
+            </h2>
+            <div className="grid gap-8 lg:grid-cols-2">
+                <ProjectGraph projects={projects} /> {/* Use TeamsMap and pass teams data */}
+            </div>
+        </div>
+
+        <div className="mb-8">
+            <h2 className="text-3xl font-bold flex items-center gap-3 mb-4">
+                <User className="h-8 w-8 text-primary"/>
+                Participants
+            </h2>
             <AllTeamsSkillsChart teams={teams} />
         </div>
 
         <div className="mb-8">
             <h2 className="text-3xl font-bold flex items-center gap-3 mb-4">
                 <Users className="h-8 w-8 text-primary"/>
-                All Candidate Projects
-            </h2>
-        </div>
-        <ProjectGraph projects={projects} /> {/* Use TeamsMap and pass teams data */}
-
-        <div className="mb-8">
-            <h2 className="text-3xl font-bold flex items-center gap-3 mb-4">
-                <Users className="h-8 w-8 text-primary"/>
-                All Registered Teams
+                Teams
             </h2>
         </div>
         <div className="grid gap-8 lg:grid-cols-2">
