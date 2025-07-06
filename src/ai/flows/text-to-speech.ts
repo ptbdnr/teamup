@@ -1,75 +1,40 @@
 // src/ai/flows/text-to-speech.ts
 'use server';
 /**
- * @fileOverview A text-to-speech AI flow.
+ * @fileOverview A text-to-speech AI flow using Groq API.
  *
  * - textToSpeech - A function that converts text to speech audio.
  */
-
-import {ai} from '@/ai/genkit';
-import {googleAI} from '@genkit-ai/googleai';
-import {z} from 'genkit';
-import * as wav from 'wav';
-
-async function toWav(
-  pcmData: Buffer,
-  channels = 1,
-  rate = 24000,
-  sampleWidth = 2
-): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const writer = new wav.Writer({
-      channels,
-      sampleRate: rate,
-      bitDepth: sampleWidth * 8,
-    });
-
-    let bufs: any[] = [];
-    writer.on('error', reject);
-    writer.on('data', function (d) {
-      bufs.push(d);
-    });
-    writer.on('end', function () {
-      resolve(Buffer.concat(bufs).toString('base64'));
-    });
-
-    writer.write(pcmData);
-    writer.end();
-  });
-}
-
-const textToSpeechFlow = ai.defineFlow(
-  {
-    name: 'textToSpeechFlow',
-    inputSchema: z.string(),
-    outputSchema: z.any(),
-  },
-  async (query) => {
-    const { media } = await ai.generate({
-      model: googleAI.model('gemini-2.5-flash-preview-tts'),
-      config: {
-        responseModalities: ['AUDIO'],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: 'Algenib' },
-          },
-        },
-      },
-      prompt: query,
-    });
-    if (!media) {
-      throw new Error('no media returned');
-    }
-    const audioBuffer = Buffer.from(
-      media.url.substring(media.url.indexOf(',') + 1),
-      'base64'
-    );
-    return {
-      media: 'data:audio/wav;base64,' + (await toWav(audioBuffer)),
-    };
-  }
-);
+import { groqTextToSpeech } from '@/ai/groq';
+import { Readable } from 'stream';
 
 export async function textToSpeech(text: string) {
-    return textToSpeechFlow(text);
+  const audio = await groqTextToSpeech({
+    text,
+    model: 'playai-tts',
+    voice: 'Arista-PlayAI',
+    response_format: 'wav',
+  });
+
+  let audioBuffer: Buffer;
+  if (audio instanceof Buffer) {
+    audioBuffer = audio;
+  } else if (audio.arrayBuffer) {
+    // Blob or File in browser/edge
+    audioBuffer = Buffer.from(await audio.arrayBuffer());
+  } else if (typeof Response !== 'undefined' && audio instanceof Response && audio.body) {
+    // If audio is a fetch Response (Node.js or edge), read the stream
+    const chunks: Buffer[] = [];
+    const stream = Readable.from(audio.body as any);
+    for await (const chunk of stream) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    audioBuffer = Buffer.concat(chunks);
+  } else {
+    throw new Error('Unknown audio type returned from Groq TTS');
+  }
+
+  return {
+    media: 'data:audio/wav;base64,' + audioBuffer.toString('base64'),
+  };
 }

@@ -1,52 +1,36 @@
 // src/ai/flows/speech-to-text.ts
 'use server';
 /**
- * @fileOverview A speech-to-text AI flow.
+ * @fileOverview A speech-to-text AI flow using Groq API.
  *
  * - transcribeAudio - A function that transcribes audio.
  * - TranscribeAudioInput - The input type for the transcribeAudio function.
  * - TranscribeAudioOutput - The return type for the transcribeAudio function.
  */
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { groqSpeechToText } from '@/ai/groq';
 
-const TranscribeAudioInputSchema = z.object({
-    audioDataUri: z
-    .string()
-    .describe(
-      "An audio recording, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
-    ),
-});
-export type TranscribeAudioInput = z.infer<typeof TranscribeAudioInputSchema>;
+export type TranscribeAudioInput = {
+  audioDataUri: string; // data URI: 'data:<mimetype>;base64,<encoded_data>'
+};
 
-const TranscribeAudioOutputSchema = z.object({
-  transcript: z.string().describe('The transcribed text from the audio.'),
-});
-export type TranscribeAudioOutput = z.infer<typeof TranscribeAudioOutputSchema>;
+export type TranscribeAudioOutput = {
+  transcript: string;
+};
 
-
-const sttPrompt = ai.definePrompt({
-    name: 'sttPrompt',
-    input: { schema: TranscribeAudioInputSchema },
-    output: { schema: TranscribeAudioOutputSchema },
-    prompt: `You are a highly accurate speech-to-text transcription service.
-    Transcribe the following audio and return the text in the 'transcript' field.
-    Audio: {{media url=audioDataUri}}`,
-});
-
-
-const speechToTextFlow = ai.defineFlow(
-  {
-    name: 'speechToTextFlow',
-    inputSchema: TranscribeAudioInputSchema,
-    outputSchema: TranscribeAudioOutputSchema,
-  },
-  async (input) => {
-    const {output} = await sttPrompt(input);
-    return output!;
-  }
-);
+function dataUriToBuffer(dataUri: string): Buffer {
+  const base64 = dataUri.split(',')[1];
+  return Buffer.from(base64, 'base64');
+}
 
 export async function transcribeAudio(input: TranscribeAudioInput): Promise<TranscribeAudioOutput> {
-    return speechToTextFlow(input);
+  const fileBuffer = dataUriToBuffer(input.audioDataUri);
+  const result = await groqSpeechToText({
+    file: fileBuffer,
+    model: 'whisper-large-v3-turbo',
+    response_format: 'json',
+    language: 'en',
+  }) as any;
+  return {
+    transcript: result.text || '',
+  };
 }

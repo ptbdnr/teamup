@@ -12,63 +12,74 @@
  * @function profileDataCollection - The main function to initiate the profile data collection flow.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { groqChatCompletion } from '@/ai/groq';
 
-const ProfileDataCollectionInputSchema = z.object({
-  query: z.string().describe('The user query to the AI profile assistant.'),
-  existingProfileData: z
-    .string()
-    .optional()
-    .describe('Existing profile data, if any, to be augmented.'),
-});
-export type ProfileDataCollectionInput = z.infer<typeof ProfileDataCollectionInputSchema>;
+export type ProfileDataCollectionInput = {
+  query: string;
+  existingProfileData?: string;
+};
 
-const ProfileDataCollectionOutputSchema = z.object({
-  updatedProfileData: z
-    .string()
-    .describe('The updated profile data containing skills and interests.'),
-  assistantResponse: z
-    .string()
-    .describe("The assistant's conversational response to the user."),
-});
-export type ProfileDataCollectionOutput = z.infer<typeof ProfileDataCollectionOutputSchema>;
+export type ProfileDataCollectionOutput = {
+  updatedProfileData: string;
+  assistantResponse: string;
+};
 
 export async function profileDataCollection(input: ProfileDataCollectionInput): Promise<ProfileDataCollectionOutput> {
-  return profileDataCollectionFlow(input);
-}
+  console.log('[profileDataCollection] input:', input);
+  // Compose the prompt for Groq LLM
+  const systemPrompt = `You are an AI profile assistant designed to help users quickly and easily input their skills and interests.\n\nYour goal is to extract skills and interests from the user's input and update their profile data.\n\nThe user will provide input through a chat interface. Use that input to gather the relevant information.\n\nExisting profile data: {{{existingProfileData}}}\n\nUser query: {{{query}}}\n\nBased on the user's query and any existing profile data, update the profile data with new skills and interests. Make sure to retain all existing data and just add or update based on the query. If no profile data exists, create the profile data.\n\nThen, provide a brief, friendly, and conversational response to the user.\n\nRespond ONLY with a valid JSON object with the following shape and nothing else:\n{ updatedProfileData: string, assistantResponse: string }`;
 
-const profileDataCollectionPrompt = ai.definePrompt({
-  name: 'profileDataCollectionPrompt',
-  input: {schema: ProfileDataCollectionInputSchema},
-  output: {schema: ProfileDataCollectionOutputSchema},
-  prompt: `You are an AI profile assistant designed to help users quickly and easily input their skills and interests.
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: `Existing profile data: ${input.existingProfileData || ''}\nUser query: ${input.query}` },
+  ];
 
-  Your goal is to extract skills and interests from the user's input and update their profile data.
-
-  The user will provide input through a chat interface. Use that input to gather the relevant information.
-
-  Existing profile data: {{{existingProfileData}}}
-
-  User query: {{{query}}}
-
-  Based on the user's query and any existing profile data, update the profile data with new skills and interests. Make sure to retain all existing data and just add or update based on the query. If no profile data exists, create the profile data.
-
-  Then, provide a brief, friendly, and conversational response to the user. For example, you can confirm what you've added and ask if there's anything else they'd like to include.
-
-  Return the updated profile data in the 'updatedProfileData' field.
-  Return your conversational response in the 'assistantResponse' field.
-`,
-});
-
-const profileDataCollectionFlow = ai.defineFlow(
-  {
-    name: 'profileDataCollectionFlow',
-    inputSchema: ProfileDataCollectionInputSchema,
-    outputSchema: ProfileDataCollectionOutputSchema,
-  },
-  async input => {
-    const {output} = await profileDataCollectionPrompt(input);
-    return output!;
+  let completion: any;
+  try {
+    completion = await groqChatCompletion({
+      messages,
+      model: 'llama3-70b-8192',
+      temperature: 0.2,
+    });
+    console.log('[profileDataCollection] Groq completion:', completion);
+  } catch (err) {
+    console.error('[profileDataCollection] Groq API error:', err);
+    throw err;
   }
-);
+
+  // Robust JSON extraction
+  let updatedProfileData = '';
+  let assistantResponse = '';
+  const content = completion.choices?.[0]?.message?.content || '';
+  console.log('[profileDataCollection] raw content:', content);
+  let jsonString = '';
+  try {
+    // Try to extract JSON from code block
+    const codeBlockMatch = content.match(/```json[\s\n]*([\s\S]+?)```/i) || content.match(/```[\s\n]*([\s\S]+?)```/i);
+    if (codeBlockMatch) {
+      jsonString = codeBlockMatch[1];
+      console.log('[profileDataCollection] extracted from code block:', jsonString);
+    } else {
+      // Fallback: extract first {...} block
+      const curlyMatch = content.match(/\{[\s\S]*\}/);
+      if (curlyMatch) {
+        jsonString = curlyMatch[0];
+        console.log('[profileDataCollection] extracted from curly braces:', jsonString);
+      } else {
+        throw new Error('No JSON object found in response');
+      }
+    }
+    const parsed = JSON.parse(jsonString);
+    updatedProfileData = parsed.updatedProfileData || '';
+    assistantResponse = parsed.assistantResponse || '';
+  } catch (e) {
+    console.error('[profileDataCollection] Parsing error:', e, content);
+    assistantResponse = content;
+  }
+
+  console.log('[profileDataCollection] output:', { updatedProfileData, assistantResponse });
+  return {
+    updatedProfileData,
+    assistantResponse,
+  };
+}
