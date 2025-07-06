@@ -2,7 +2,7 @@
 
 import { profileDataCollection } from '@/ai/flows/profile-data-collection';
 import { transcribeAudio as transcribeAudioFlow } from '@/ai/flows/speech-to-text';
-import { textToSpeech } from '@/ai/flows/text-to-speech';
+import { textToSpeech as textToSpeechFlow } from '@/ai/flows/text-to-speech';
 import { z } from 'zod';
 
 const formSchema = z.object({
@@ -65,6 +65,12 @@ const speechSchema = z.object({
     text: z.string(),
 });
 
+type TTSResult = { media: string } | null;
+
+export async function textToSpeech(text: string) {
+  return textToSpeechFlow(text);
+}
+
 export async function synthesizeSpeech(formData: FormData) {
     const validatedFields = speechSchema.safeParse({
         text: formData.get('text'),
@@ -79,7 +85,11 @@ export async function synthesizeSpeech(formData: FormData) {
     }
 
     try {
-        const { media } = await textToSpeech(validatedFields.data.text);
+        const result = await textToSpeech(validatedFields.data.text);
+        if (!result) {
+          return { audioDataUri: null, error: null };
+        }
+        const { media } = result;
         return { audioDataUri: media, error: null };
     } catch (error) {
         console.error('TTS error:', error);
