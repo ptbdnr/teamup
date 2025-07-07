@@ -24,7 +24,7 @@ ACCESS_LEVEL = "public-read"
 
 PATH_TO_FILES = "./.tmp"
 FILENAMES = [
-    "TeamForge_v1.1.mp4",
+    "TeamForge_v1.2.mp4",
 ]
 
 # Print env variables
