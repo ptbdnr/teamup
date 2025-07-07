@@ -38,6 +38,44 @@ function SubmitButton() {
   );
 }
 
+function humanLabel(key: string): string {
+  switch (key) {
+    case 'backgroundTechnologies': return 'Background Technologies';
+    case 'interests': return 'Interests';
+    case 'hackathonIdeas': return 'Hackathon Ideas';
+    case 'wantsToLead': return 'Wants To Lead';
+    default:
+      // Fallback: split camelCase to words
+      return key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+  }
+}
+
+function renderProfileSummary(
+  profile: string | Record<string, unknown> | null | undefined
+): React.ReactNode {
+  if (!profile || (typeof profile === 'string' && (!profile.trim() || profile.trim() === '{}'))) {
+    return <span>Your profile is empty. Start by telling the AI about your skills!</span>;
+  }
+  let obj = profile;
+  if (typeof profile === 'string') {
+    try {
+      obj = JSON.parse(profile);
+    } catch {
+      return <span>{profile}</span>;
+    }
+  }
+  if (!obj || typeof obj !== 'object') return <span>Your profile is empty. Start by telling the AI about your skills!</span>;
+  const entries = Object.entries(obj).filter(([_, v]) => v && v !== '' && v !== 'string or empty');
+  if (entries.length === 0) return <span>Your profile is empty. Start by telling the AI about your skills!</span>;
+  return (
+    <ul className="list-disc pl-4">
+      {entries.map(([k, v]) => (
+        <li key={k}><b>{humanLabel(k)}:</b> {String(v)}</li>
+      ))}
+    </ul>
+  );
+}
+
 export function ProfileForm() {
   const [state, formAction] = useFormState(getAiProfileUpdate, initialState);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -220,7 +258,7 @@ export function ProfileForm() {
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[400px] w-full">
-            <pre className="whitespace-pre-wrap font-sans text-sm p-4 bg-muted rounded-md">{state.updatedProfileData}</pre>
+            {renderProfileSummary(state.updatedProfileData)}
           </ScrollArea>
         </CardContent>
         <CardFooter className="flex justify-end">
