@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useTransition, useRef, useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
 import Link from 'next/link';
 
 import { getAiProfileUpdate, transcribeAudio, synthesizeSpeech } from './actions';
@@ -77,7 +78,7 @@ function renderProfileSummary(
 }
 
 export function ProfileForm() {
-  const [state, formAction] = useFormState(getAiProfileUpdate, initialState);
+  const [state, formAction] = useActionState(getAiProfileUpdate, initialState);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
