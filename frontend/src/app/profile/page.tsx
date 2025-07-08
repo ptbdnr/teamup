@@ -15,7 +15,7 @@ export default function ProfilePage() {
               <div>
                 <CardTitle className="text-2xl">Create Your Profile with AI</CardTitle>
                 <CardDescription>
-                  Simply chat with our AI assistant below. Tell it about your skills, interests, and what you're looking for in a teammate.
+                  Simply chat with our AI assistant below. Tell it about your skills, background and interests.
                 </CardDescription>
               </div>
             </div>

@@ -4,12 +4,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Users, BrainCircuit, Lightbulb, ExternalLink, Search, BarChart3 } from "lucide-react";
-import { teams, myTeamId } from "@/lib/team-data";
+import { mockupUsers, mockupTeams, myTeamId } from "@/lib/mockup-data";
+import { User } from "@/lib/types";
 import { TeamSkillsGraph } from "@/components/TeamSkillsGraph";
 import Link from "next/link";
 
 export default function TeamPage() {
-  const myTeam = teams.find(team => team.id === myTeamId);
+  const myTeam = mockupTeams.find(team => team.id === myTeamId);
 
   if (!myTeam) {
     return (
@@ -26,7 +27,21 @@ export default function TeamPage() {
     )
   }
 
-  const { name, members } = myTeam;
+  const { name, userIds } = myTeam;
+  const members = userIds.map((userId) => {
+    const user = mockupUsers.find((u) => u.id === userId);
+    if (!user) {
+      return null; // Skip if user not found
+    }
+    return {
+      ...user,
+      isYou: user.id === myTeamId, // Mark if this is the current user
+      skills: user.skills || [],
+      interests: user.interests || [],
+      discord: user.discord || '#',
+      dataAiHint: user.dataAiHint || '',
+    } as User;
+  }).filter(Boolean); // Filter out any null values
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -38,12 +53,22 @@ export default function TeamPage() {
             Your Team: "{name}"
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
-            You've been matched! Here's your team. Reach out via Discord to get started.
+            Here's your team. Reach out via Discord to get started.
           </p>
+          <Button asChild size="lg" variant="outline">
+            <Link href="/team-swap">
+                <Search className="mr-2"/>
+                Changed your mind? (Try another team)
+            </Link>
+          </Button>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-          {members.map((member) => (
+          {members.map((member) => {
+            if (!member) {
+              return null; // Skip if member is null
+            }
+            return (
             <Card key={member.name} className="flex flex-col">
               <CardHeader className="flex flex-row items-center gap-4">
                 <Avatar className="h-16 w-16">
@@ -88,31 +113,64 @@ export default function TeamPage() {
                 </Button>
               </CardFooter>
             </Card>
-          ))}
+            );
+          })}
         </div>
 
-        <div className="mb-8">
-            <TeamSkillsGraph members={members} />
-        </div>
+        {members.length > 0 && 
+          <div className="mb-8">
+              <TeamSkillsGraph members={members.filter((member): member is User => member !== null)} />
+          </div>
+        }
 
         <Card>
             <CardHeader>
                 <CardTitle>Next Steps</CardTitle>
-                <CardDescription>Explore other teams or see how skills are distributed across the hackathon.</CardDescription>
             </CardHeader>
             <CardContent className="grid sm:grid-cols-2 gap-4">
-                <Button asChild size="lg" variant="outline">
-                    <Link href="/team-swap">
-                        <Search className="mr-2"/>
-                        Find a New Team (Swap)
-                    </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline">
-                    <Link href="/teams-graph">
-                        <BarChart3 className="mr-2"/>
-                        View All Teams & Skills Graph
-                    </Link>
-                </Button>
+
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Kickoff Agenda</h3>
+                <ul className="list-disc pl-5">
+                  <li>Introduction and team alignment</li>
+                  <li>Project goals and objectives</li>
+                  <li>Roles and responsibilities</li>
+                  <li>Timeline and milestones</li>
+                  <li>Q&A session</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">User Journey Outline</h3>
+                <p className="text-muted-foreground">
+                  Define the user experience from onboarding to achieving their goals:
+                </p>
+                <ul className="list-disc pl-5">
+                  <li>Onboarding process</li>
+                  <li>Key interactions and touchpoints</li>
+                  <li>Feedback loops</li>
+                  <li>Retention strategies</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Tentative Schedule</h3>
+                <ul className="list-disc pl-5">
+                  <li>Week 1: Research and planning</li>
+                  <li>Week 2-3: Design and prototyping</li>
+                  <li>Week 4-6: Development and testing</li>
+                  <li>Week 7: Final review and deployment</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Milestones</h3>
+                <ul className="list-disc pl-5">
+                  <li>Completion of user research</li>
+                  <li>Approval of design prototypes</li>
+                  <li>Development of core features</li>
+                  <li>Successful testing and QA</li>
+                  <li>Project launch</li>
+                </ul>
+              </div>
+                
             </CardContent>
         </Card>
 

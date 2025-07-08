@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useTransition, useRef, useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useState, useTransition, useRef, useEffect, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import Link from 'next/link';
+import { useProfileContext } from '@/contexts/ProfileContext';
 
 import { getAiProfileUpdate, transcribeAudio, synthesizeSpeech } from './actions';
 import { Button } from '@/components/ui/button';
@@ -10,22 +11,12 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Mic, MicOff, Send, User, Bot, Sparkles, Loader2 } from 'lucide-react';
+import { Mic, MicOff, Send, User as UserIcon, Bot, Sparkles, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 type ChatMessage = {
   role: 'user' | 'assistant';
   content: string;
-};
-
-const initialState: {
-    error: string | null;
-    updatedProfileData: string;
-    assistantResponse?: string;
-} = {
-  error: null,
-  updatedProfileData: 'Your profile is empty. Start by telling the AI about your skills!',
-  assistantResponse: '',
 };
 
 function SubmitButton() {
@@ -39,7 +30,19 @@ function SubmitButton() {
 }
 
 export function ProfileForm() {
-  const [state, formAction] = useFormState(getAiProfileUpdate, initialState);
+  const { profile, isLoading, setProfile } = useProfileContext();
+  
+  const initialState: {
+    error: string | null;
+    updatedProfileData: string;
+    assistantResponse?: string;
+  } = {
+    error: null,
+    updatedProfileData: profile?.dataAiHint || 'Your profile is empty. Start by telling the AI about your skills!',
+    assistantResponse: '',
+  };
+
+  const [state, formAction] = useActionState(getAiProfileUpdate, initialState);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -78,7 +81,8 @@ export function ProfileForm() {
           formData.append('text', state.assistantResponse!);
           const result = await synthesizeSpeech(formData);
           if (result.error) {
-              toast({ variant: 'destructive', title: 'Speech Error', description: result.error });
+              // toast({ variant: 'destructive', title: 'Speech Error', description: result.error, duration: 1 });
+              console.error("Speech synthesis error:", result.error);
           } else if (result.audioDataUri && audioRef.current) {
               audioRef.current.src = result.audioDataUri;
               audioRef.current.play().catch(e => console.error("Audio playback failed", e));
@@ -178,7 +182,7 @@ export function ProfileForm() {
                   </div>
                   {message.role === 'user' && (
                     <Avatar>
-                      <AvatarFallback><User /></AvatarFallback>
+                      <AvatarFallback><UserIcon /></AvatarFallback>
                     </Avatar>
                   )}
                 </div>
@@ -224,7 +228,19 @@ export function ProfileForm() {
           </ScrollArea>
         </CardContent>
         <CardFooter className="flex justify-end">
-            <Button asChild disabled={state.updatedProfileData === initialState.updatedProfileData}>
+            <Button asChild disabled={state.updatedProfileData === initialState.updatedProfileData} onClick={() => {
+                setProfile({
+                    ...profile,
+                    dataAiHint: state.updatedProfileData,
+                });
+                toast({ 
+                  variant: 'default', 
+                  title: 'Profile Updated', 
+                  description: 'Your profile has been successfully updated.',
+                  duration: 2000,
+                });
+            }
+            }>
                 <Link href="/confirmation">Confirm Profile & Continue</Link>
             </Button>
         </CardFooter>

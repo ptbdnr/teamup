@@ -1,21 +1,29 @@
 'use client'
 
 import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useRouter } from 'next/navigation';
+import { useProfileContext } from '@/contexts/ProfileContext';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { PersonStandingIcon, CodeIcon, TrophyIcon } from 'lucide-react';
-import { Project } from '@/lib/team-data';
+import { PersonStandingIcon, CodeIcon, TrophyIcon, Users, UserPlus, Plus } from 'lucide-react';
+import { User, Project } from '@/lib/types';
+import { mockupTeams, mockupUsers } from '@/lib/mockup-data';
+import { useToast } from '@/hooks/use-toast';
 
 
-interface ProjectGraphProps {
+interface ProjectsGraphProps {
   projects: Project[];
+  users?: User[];
 }
 
-const ProjectGraph: React.FC<ProjectGraphProps> = ({ projects: projects }) => {
+const ProjectsGraph: React.FC<ProjectsGraphProps> = ({ projects: projects }) => {
+  const { toast } = useToast();
+  const { profile, setProfile } = useProfileContext();
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const router = useRouter();
 
   const handleProjectClick = (project: Project) => {
     setSelectedProject(project);
@@ -25,10 +33,39 @@ const ProjectGraph: React.FC<ProjectGraphProps> = ({ projects: projects }) => {
     setSelectedProject(null);
   };
 
+  const handleJoinTeam = (teamId: string) => {
+    toast({
+      title: 'Joining',
+      description: `You have joined the team with ID: ${teamId}.`,
+      variant: 'default',
+    });
+    router.push('/team');
+  };
+
+  const handleCreateTeam = () => {
+    // In a real app, this would create a new team for the project
+    toast({
+      title: 'Creating',
+      description: 'You are creating a new team for this project.',
+      variant: 'default',
+    });
+    router.push('/team');
+  };
+
+  // Get teams working on the selected project
+  const getProjectTeams = (project: Project) => {
+    // Filter teams that are working on this project
+    // In a real app, projects would have team associations
+    // For now, we'll show some teams as examples
+    return mockupTeams.filter(team => team.id == project.teamId);
+  };
+
+  const projectTeams = selectedProject ? getProjectTeams(selectedProject) : [];
+
   // Calculate position within the triangle
   // The triangle vertices are:
   // Top (Method & Tech): x=50, y=0
-  // Bottom Left (Social & Emotion): x=0, y=100
+  // Bottom Left (Social & Nature): x=0, y=100
   // Bottom Right (Result & Control): x=100, y=100
   // This is a simplified representation and might need adjustments for a more accurate SDI-like visual.
   // We'll use a barycentric coordinate-like approach, but scaled for the triangle's dimensions.
@@ -59,7 +96,7 @@ const ProjectGraph: React.FC<ProjectGraphProps> = ({ projects: projects }) => {
         // Barycentric-like approach scaled to the triangle vertices
         // Vertices (normalized coordinates 0-100, 0-100):
         // A (Method & Tech): (50, 0)
-        // B (Social & Emotion): (0, 100)
+        // B (Social & Nature): (0, 100)
         // C (Result & Control): (100, 100)
 
         // Using normalized scores as weights. Adjusting for totalScore can help
@@ -92,7 +129,7 @@ const ProjectGraph: React.FC<ProjectGraphProps> = ({ projects: projects }) => {
           <CodeIcon className="w-5 h-5 mr-1" /> Method & Tech
         </div>
         <div className="absolute bottom-4 left-4 text-lg font-semibold text-blue-700 flex items-center">
-           <PersonStandingIcon className="w-5 h-5 mr-1" /> Social & Emotion
+           <PersonStandingIcon className="w-5 h-5 mr-1" /> Social & Nature
         </div>
         <div className="absolute bottom-4 right-4 text-lg font-semibold text-green-700 flex items-center">
           <TrophyIcon className="w-5 h-5 mr-1" /> Result & Control
@@ -102,7 +139,7 @@ const ProjectGraph: React.FC<ProjectGraphProps> = ({ projects: projects }) => {
       {projects.map((project) => (
         <div // Use a button or interactive element for better accessibility
           key={project.id}
-          className="absolute p-2 bg-blue-500 bg-opacity-70 rounded-full cursor-pointer hover:bg-blue-600 transition-all duration-200 shadow-md"
+          className="absolute p-2 bg-blue-100 bg-opacity-70 rounded-full cursor-pointer hover:bg-blue-600 transition-all duration-200 shadow-md"
           onClick={() => handleProjectClick(project)}
           title={`${project.name}`}
           style={{
@@ -118,15 +155,14 @@ const ProjectGraph: React.FC<ProjectGraphProps> = ({ projects: projects }) => {
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>{selectedProject?.name}</DialogTitle>
-            <DialogDescription>Detailed information about {selectedProject?.name}.</DialogDescription>
+            <DialogDescription>{selectedProject?.description}</DialogDescription>
           </DialogHeader>
           {selectedProject && (
-            <div className="py-4">
-              <p className="text-sm text-gray-700 mb-4">{selectedProject.description}</p>
+            <div className="py-4 space-y-6">
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardDescription>Social & Emotion</CardDescription>
+                    <CardDescription>Social & Nature</CardDescription>
                     <CardTitle className="text-2xl flex items-center">
                       <PersonStandingIcon className="w-5 h-5 mr-2 text-blue-500" />
                       {selectedProject.graphCoordinates?.social}
@@ -161,6 +197,81 @@ const ProjectGraph: React.FC<ProjectGraphProps> = ({ projects: projects }) => {
                   </CardContent>
                 </Card>
               </div>
+            
+              <div className="flex">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Teams Working on This Project ({projectTeams.length})
+                  </CardTitle>
+                  <CardDescription>
+                    {projectTeams.length > 0 
+                      ? "Join an existing team or create a new one for this project"
+                      : "No teams are working on this project yet. Be the first to create one!"
+                    }
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {projectTeams.length > 0 && (
+                    <div className="space-y-3">
+                      {projectTeams.map(team => {
+                        const teamMembers = team.userIds.map(userId => 
+                          mockupUsers.find(user => user.id === userId)
+                        ).filter(Boolean);
+
+                      return (
+                        <div key={team.id} className="border rounded-lg p-4 flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-semibold">{team.name}</h4>
+                              <Badge variant="secondary">{teamMembers.length} members</Badge>
+                            </div>
+                            <div className="flex items-center gap-2 mb-2">
+                              {teamMembers.slice(0, 3).map(member => member && (
+                                <Avatar key={member.id} className="h-6 w-6">
+                                  <AvatarImage src={member.avatar} alt={member.name} />
+                                  <AvatarFallback className="text-xs">{member.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                              ))}
+                              {teamMembers.length > 3 && (
+                                <span className="text-xs text-muted-foreground">+{teamMembers.length - 3} more</span>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {Array.from(new Set(teamMembers.flatMap(m => m?.skills || []))).slice(0, 4).map(skill => (
+                                <Badge key={skill} variant="outline" className="text-xs">{skill}</Badge>
+                              ))}
+                            </div>
+                            <div className="pt-4">
+                              <Button 
+                                onClick={() => handleJoinTeam(team.id)}
+                                className="ml-4"
+                              >
+                                <UserPlus className="w-4 h-4 mr-2" />
+                                Join This Team
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      );                          
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              </div>
+
+              <div className="pt-4 border-t">
+                <Button 
+                  onClick={handleCreateTeam}
+                  className="w-full"
+                  variant={projectTeams.length > 0 ? "outline" : "default"}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create New Team for This Project
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
@@ -169,5 +280,5 @@ const ProjectGraph: React.FC<ProjectGraphProps> = ({ projects: projects }) => {
   );
 };
 
-export default ProjectGraph;
+export default ProjectsGraph;
 

@@ -2,22 +2,20 @@
 
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Team } from '@/lib/team-data';
+import type { User } from '@/lib/types';
 import { BarChart3 } from 'lucide-react';
 
-interface AllTeamsSkillsChartProps {
-  teams: Team[];
+interface AllUserSkillsChartProps {
+  users: User[];
   topN?: number;
 }
 
-export function AllTeamsSkillsChart({ teams, topN = 15 }: AllTeamsSkillsChartProps) {
+export function AllUserSkillsChart({ users, topN = 15 }: AllUserSkillsChartProps) {
   const skillCounts: { [skill: string]: number } = {};
 
-  teams.forEach(team => {
-    team.members.forEach(member => {
-      member.skills.forEach(skill => {
-        skillCounts[skill] = (skillCounts[skill] || 0) + 1;
-      });
+  users.forEach(user => {
+    user.skills.forEach(skill => {
+      skillCounts[skill] = (skillCounts[skill] || 0) + 1;
     });
   });
 

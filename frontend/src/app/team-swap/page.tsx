@@ -27,12 +27,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { teams, myTeamId } from "@/lib/team-data";
+import { mockupTeams, mockupUsers, myTeamId } from "@/lib/mockup-data";
 import { ArrowLeft, BrainCircuit, UserPlus } from 'lucide-react';
 
 export default function TeamSwapPage() {
     const router = useRouter();
-    const otherTeams = teams.filter(team => team.id !== myTeamId);
+    const otherTeams = mockupTeams.filter(team => team.id !== myTeamId);
     const [joiningTeamName, setJoiningTeamName] = React.useState('');
 
     const handleJoinTeam = () => {
@@ -71,18 +71,27 @@ export default function TeamSwapPage() {
                 className="w-full max-w-xl mx-auto"
             >
                 <CarouselContent>
-                    {otherTeams.map((team) => (
+                    {otherTeams.map((team) => {
+                        const members = team.userIds.map(userId => {
+                            return mockupUsers.find(user => user.id === userId);
+                        }).filter(Boolean); // Filter out any undefined users
+                        if (!members.length) {
+                            return null; // Skip teams with no members
+                        }
+                        return (
                         <CarouselItem key={team.id}>
                             <div className="p-1">
                                 <Card className="flex flex-col h-full">
                                     <CardHeader>
                                         <CardTitle>{team.name}</CardTitle>
-                                        <CardDescription>{team.description}</CardDescription>
+                                        {/* <CardDescription>{team.description}</CardDescription> */}
                                     </CardHeader>
                                     <CardContent className="flex-1 space-y-4">
-                                        <h3 className="font-semibold text-sm">Members ({team.members.length})</h3>
+                                        <h3 className="font-semibold text-sm">Members ({team.userIds.length})</h3>
                                         <div className="space-y-3">
-                                            {team.members.map(member => (
+                                            {members.map(member => {
+                                                if (!member) return null; // Skip if member not found
+                                                return (
                                                 <div key={member.name} className="flex items-center gap-3">
                                                     <Avatar>
                                                         <AvatarImage src={member.avatar} alt={member.name} data-ai-hint={member.dataAiHint} />
@@ -93,7 +102,8 @@ export default function TeamSwapPage() {
                                                         <p className="text-xs text-muted-foreground">{member.role}</p>
                                                     </div>
                                                 </div>
-                                            ))}
+                                                )
+                                            })}
                                         </div>
                                          <div className="pt-4">
                                             <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
@@ -101,7 +111,7 @@ export default function TeamSwapPage() {
                                                 Top Skills
                                             </h3>
                                             <div className="flex flex-wrap gap-2">
-                                                {Array.from(new Set(team.members.flatMap(m => m.skills))).slice(0, 5).map(skill => (
+                                                {Array.from(new Set(members.flatMap(m => m && m.skills ? m.skills : []))).slice(0, 5).map(skill => (
                                                     <Badge key={skill}>{skill}</Badge>
                                                 ))}
                                             </div>
@@ -132,7 +142,8 @@ export default function TeamSwapPage() {
                                 </Card>
                             </div>
                         </CarouselItem>
-                    ))}
+                        );
+                    })}
                 </CarouselContent>
                 <CarouselPrevious className="hidden sm:flex" />
                 <CarouselNext className="hidden sm:flex" />
