@@ -86,6 +86,9 @@ export function ProfileForm() {
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, startTranscribing] = useTransition();
   const [isSynthesizing, startSynthesizing] = useTransition();
+  const chatViewportRef = useRef<HTMLDivElement | null>(null);
+  const didMountRef = useRef(false);
+  const scrollDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const { toast } = useToast();
 
@@ -99,10 +102,33 @@ export function ProfileForm() {
     }
   }, [state.error, toast]);
 
+  const scrollToBottom = () => {
+    if (chatViewportRef.current) {
+      chatViewportRef.current.scrollTo({
+        top: chatViewportRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (didMountRef.current && chatHistory.length > 0) {
+      // if (scrollDebounceRef.current) {
+      //   clearTimeout(scrollDebounceRef.current);
+      // }
+      // scrollDebounceRef.current = setTimeout(() => {
+        scrollToBottom();
+      // }, 1000); // 1 second debounce
+    } else {
+      didMountRef.current = true;
+    }
+  }, [chatHistory]);
+
   const handleFormSubmit = async (formData: FormData) => {
     const query = formData.get('query') as string;
     if (query) {
       setChatHistory(prev => [...prev, { role: 'user', content: query }]);
+      formData.set('chatHistory', JSON.stringify([...chatHistory, { role: 'user', content: query }]));
       formAction(formData);
       formRef.current?.reset();
     }
@@ -112,17 +138,18 @@ export function ProfileForm() {
     if (state.assistantResponse && chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
         setChatHistory(prev => [...prev, { role: 'assistant', content: state.assistantResponse! }]);
 
-        startSynthesizing(async () => {
-          const formData = new FormData();
-          formData.append('text', state.assistantResponse!);
-          const result = await synthesizeSpeech(formData);
-          if (result.error) {
-              toast({ variant: 'destructive', title: 'Speech Error', description: result.error });
-          } else if (result.audioDataUri && audioRef.current) {
-              audioRef.current.src = result.audioDataUri;
-              audioRef.current.play().catch(e => console.error("Audio playback failed", e));
-          }
-        });
+        // TTS temporarily disabled
+        // startSynthesizing(async () => {
+        //   const formData = new FormData();
+        //   formData.append('text', state.assistantResponse!);
+        //   const result = await synthesizeSpeech(formData);
+        //   if (result.error) {
+        //       toast({ variant: 'destructive', title: 'Speech Error', description: result.error });
+        //   } else if (result.audioDataUri && audioRef.current) {
+        //       audioRef.current.src = result.audioDataUri;
+        //       audioRef.current.play().catch(e => console.error("Audio playback failed", e));
+        //   }
+        // });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.assistantResponse, state.updatedProfileData]);
@@ -187,14 +214,14 @@ export function ProfileForm() {
 
   return (
     <div className="grid md:grid-cols-2 gap-8">
-      <Card>
+      <Card className="flex flex-col h-[500px] md:h-[600px] overflow-hidden">
         <CardHeader>
           <CardTitle>AI Assistant</CardTitle>
           <CardDescription>Chat with our bot to build your profile.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <ScrollArea className="h-[400px] w-full pr-4">
-            <div className="space-y-4">
+        <CardContent className="flex-1 flex flex-col min-h-0">
+          <ScrollArea className="flex-1 min-h-0 w-full pr-4" viewportRef={chatViewportRef}>
+            <div className="space-y-4 h-full">
               <div className="flex items-start gap-4">
                 <Avatar>
                   <AvatarFallback><Bot /></AvatarFallback>
@@ -240,6 +267,7 @@ export function ProfileForm() {
           <form ref={formRef} action={handleFormSubmit} className="flex w-full items-center space-x-2">
             <Input name="query" placeholder="Type or record your message..." autoComplete="off" disabled={isProcessing} />
             <input type="hidden" name="existingProfileData" value={state.updatedProfileData} />
+            <input type="hidden" name="chatHistory" value={JSON.stringify(chatHistory)} />
             <Button type="button" size="icon" variant="outline" onClick={handleRecordClick} disabled={useFormStatus().pending || isSynthesizing}>
               {isRecording ? <MicOff className="h-4 w-4 text-destructive animate-pulse" /> : isTranscribing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mic className="h-4 w-4" />}
               <span className="sr-only">{isRecording ? "Stop Recording" : "Start Recording"}</span>
@@ -258,7 +286,7 @@ export function ProfileForm() {
           <CardDescription>This is what we've gathered so far. It will be used for team matching.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[400px] w-full">
+          <ScrollArea className="h-[215px] md:h-[400px] w-full">
             {renderProfileSummary(state.updatedProfileData)}
           </ScrollArea>
         </CardContent>

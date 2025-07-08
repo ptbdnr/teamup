@@ -8,12 +8,14 @@ import { z } from 'zod';
 const formSchema = z.object({
   query: z.string().min(1, 'Message cannot be empty.'),
   existingProfileData: z.string().optional(),
+  chatHistory: z.string().optional(),
 });
 
 export async function getAiProfileUpdate(prevState: any, formData: FormData) {
   const validatedFields = formSchema.safeParse({
     query: formData.get('query'),
     existingProfileData: formData.get('existingProfileData'),
+    chatHistory: formData.get('chatHistory'),
   });
 
   if (!validatedFields.success) {
@@ -24,7 +26,17 @@ export async function getAiProfileUpdate(prevState: any, formData: FormData) {
   }
 
   try {
-    const result = await profileDataCollection(validatedFields.data);
+    // Parse chatHistory if present
+    let chatHistoryArr = [];
+    if (validatedFields.data.chatHistory) {
+      try {
+        chatHistoryArr = JSON.parse(validatedFields.data.chatHistory);
+      } catch {}
+    }
+    const result = await profileDataCollection({
+      ...validatedFields.data,
+      chatHistory: chatHistoryArr,
+    });
     return {
       error: null,
       updatedProfileData: result.updatedProfileData,

@@ -84,12 +84,12 @@ export function CountdownTimer({ targetDate }: CountdownTimerProps) {
             )}
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col gap-4">
+      {/* <CardFooter className="flex flex-col gap-4">
         <Button onClick={() => router.push('/team')} size="lg">
           Skip and See Your Team Now
         </Button>
         <p className="text-xs text-muted-foreground">(This is a temporary feature for testing)</p>
-      </CardFooter>
+      </CardFooter> */}
     </>
   );
 }
