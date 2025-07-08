@@ -13,6 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Mic, MicOff, Send, User as UserIcon, Bot, Sparkles, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import styles from './ProfileForms.module.css';
 
 type ChatMessage = {
   role: 'user' | 'assistant';
@@ -151,7 +152,7 @@ export function ProfileForm() {
   const isProcessing = useFormStatus().pending || isTranscribing || isSynthesizing;
 
   return (
-    <div className={`flex ${window.innerWidth < 768 ? 'flex flex-col' : ''} gap-8`}>
+    <div className={styles.container}>
       <Card className="flex-1">
         <CardHeader>
           <CardTitle>AI Assistant</CardTitle>

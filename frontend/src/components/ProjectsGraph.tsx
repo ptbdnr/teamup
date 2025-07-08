@@ -157,7 +157,7 @@ const ProjectsGraph: React.FC<ProjectsGraphProps> = ({ projects: projects }) => 
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>{selectedProject?.name}</DialogTitle>
-            <DialogDescription>{selectedProject?.description}</DialogDescription>
+            <DialogDescription>{selectedProject?.shortDescription}</DialogDescription>
           </DialogHeader>
           {selectedProject && (
             <div className="py-4 space-y-6">

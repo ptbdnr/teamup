@@ -49,17 +49,19 @@ export default function TeamSwapPage() {
       <Header />
       <main className="flex-1 container mx-auto p-4 md:p-8 flex flex-col items-center">
         <div className="w-full max-w-4xl">
+            {/* 
             <Button asChild variant="ghost" className="mb-4">
                 <Link href="/team">
                     <ArrowLeft className="mr-2 h-4 w-4"/>
                     Back to Your Team
                 </Link>
-            </Button>
+            </Button> 
+            */}
 
             <div className="text-center mb-8">
-                <h1 className="text-4xl font-bold">Find a New Team</h1>
+                <h1 className="text-4xl font-bold">Discover Your New Team</h1>
                 <p className="text-muted-foreground mt-2 text-lg">
-                    Browse other teams. If you find a good fit, you can request to join.
+                    Browse amongs the recommended teams. If you find a good fit, you can request to join.
                 </p>
             </div>
 

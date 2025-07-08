@@ -3,10 +3,12 @@
 import Header from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { AllUserSkillsChart } from "@/components/AllUserSkillsChart";
 import { mockupUsers, mockupTeams, mockupProjects } from "@/lib/mockup-data";
-import { User, Users, Target } from "lucide-react";
+import { User, Users, Target, Lightbulb } from "lucide-react";
 import ProjectsGraph from "@/components/ProjectsGraph"; // Import TeamsMap
 
 export default function TeamsGraphPage() {
@@ -22,6 +24,12 @@ export default function TeamsGraphPage() {
             <div className="w-full max-w-2xl text-center">
                 <ProjectsGraph projects={mockupProjects} />
             </div> 
+            <Button className="w-full" asChild size="lg">
+                <Link href="/project-discovery">
+                    <Lightbulb className="mr-2"/>
+                    See recommendations!
+                </Link>
+            </Button>
         </div>
 
         <div className="mb-8">
