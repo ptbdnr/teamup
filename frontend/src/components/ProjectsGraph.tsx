@@ -122,18 +122,17 @@ const ProjectsGraph: React.FC<ProjectsGraphProps> = ({ projects: projects }) => 
   }, []); // Recalculate if projects data structure or scaling changes (unlikely in this case)
 
   return (
-    <div className="relative w-full max-w-[700px] mx-auto aspect-[4/3] bg-gray-50 border rounded-md overflow-hidden p-8 flex flex-col justify-end items-center">
+    <div className="relative w-full max-w-[350px] sm:max-w-[700px] mx-auto aspect-[4/3] bg-gray-50 border rounded-md overflow-hidden p-2 sm:p-8 flex flex-col justify-end items-center">
       {/* SDI Triangle Background (Simplified) */}
       <div className="absolute inset-0 flex justify-center items-center">
-        {/* This is a placeholder. A real SDI visualization would use a SVG or complex CSS shapes. */}
-        {/* We'll use text labels positioned around where the points would be */}
-        <div className="absolute top-4 text-center text-lg font-semibold text-purple-700 flex items-center">
+        {/* Responsive text labels for triangle corners */}
+        <div className="absolute top-2 sm:top-4 left-1/2 -translate-x-1/2 text-center text-base sm:text-lg font-semibold text-purple-700 flex items-center">
           <CodeIcon className="w-5 h-5 mr-1" /> Method & Tech
         </div>
-        <div className="absolute bottom-4 left-4 text-lg font-semibold text-blue-700 flex items-center">
+        <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 text-base sm:text-lg font-semibold text-blue-700 flex items-center">
            <PersonStandingIcon className="w-5 h-5 mr-1" /> Social & Nature
         </div>
-        <div className="absolute bottom-4 right-4 text-lg font-semibold text-green-700 flex items-center">
+        <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4 text-base sm:text-lg font-semibold text-green-700 flex items-center">
           <TrophyIcon className="w-5 h-5 mr-1" /> Result & Control
         </div>
       </div>

@@ -17,7 +17,7 @@ export default function TeamsGraphPage() {
       <Header />
       <main className="flex-1 container mx-auto p-4 md:p-8">
         <div className="flex flex-col items-center w-full mb-8">
-          <Card className="w-full max-w-2xl mx-auto">
+          <Card className="w-full max-w-sm sm:max-w-2xl mx-auto">
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
                 <Target className="h-8 w-8 text-primary"/>
@@ -31,7 +31,7 @@ export default function TeamsGraphPage() {
               <ProjectsGraph projects={mockupProjects} />
             </CardContent>
           </Card>
-          <Button className="mt-6 w-auto px-8" asChild size="lg">
+          <Button className="mt-6 w-full max-w-xs mx-auto sm:w-auto sm:max-w-none sm:px-8" asChild size="lg">
             <Link href="/project-discovery">
               <Lightbulb className="mr-2"/>
               See recommendations!
