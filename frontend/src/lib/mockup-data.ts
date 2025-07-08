@@ -96,6 +96,30 @@ export const mockupUsers: User[] = [
 
 export const mockupProjects: Project[] = [
     {
+      id: 'ai-powered-chatbot',
+      name: 'AI-Powered Chatbot',
+      shortDescription: 'A chatbot that uses AI to provide intelligent responses.',
+      longDescription: 'This project is an AI-powered chatbot that can understand and respond to user queries in natural language. It leverages machine learning algorithms to improve its responses over time.',
+      teamId: '',
+      graphCoordinates: {
+        result: 0.8,
+        method: 0.5,
+        social: 0.2,
+      }
+    },
+    {
+      id: 'machine-learning-pipeline',
+      name: 'Machine Learning Pipeline',
+      shortDescription: 'A pipeline for training and deploying machine learning models.',
+      longDescription: 'This project focuses on building a robust machine learning pipeline that automates the process of training, validating, and deploying models. It includes features such as data preprocessing, model selection, and performance monitoring.',
+      teamId: '',
+      graphCoordinates: {
+        result: 0.6,
+        method: 0.8,
+        social: 0.1,
+      }
+    },
+    {
       id: 'innovators-app',
       name: 'Innovators AI App',
       shortDescription: 'A web application showcasing the AI capabilities built by the team.',
@@ -129,6 +153,66 @@ export const mockupProjects: Project[] = [
         result: 0.5,
         method: 0.5,
         social: 0.7,
+      }
+    },
+    {
+      id: 'ops-pilot',
+      name: 'OpsPilot',
+      shortDescription: 'AI-powered personal assistant for email management and scheduling.',
+      longDescription: 'OpsPilot enhances productivity and communication for professionals by leveraging AI and automation. It acts as a personal assistant for email management and scheduling, reducing time spent on administrative tasks. Features include intelligent integrations with Google Calendar, Gmail, and Coral Protocol, AI-powered summaries, inbox management, and insightful reports.',
+      teamId: '',
+      graphCoordinates: {
+        result: 0.8,
+        method: 0.4,
+        social: 0.6,
+      }
+    },
+    {
+      id: 'jhadepilot',
+      name: 'JHADEPILOT',
+      shortDescription: 'AI-powered platform converting ideas to deployable code.',
+      longDescription: 'JHADEPILOT is a next-generation AI-powered platform that helps developers convert ideas into working code with automated build, test, and deployment pipelines. Features a multi-agent system with BuildAgent, TestAgent, and DeployAgent working together to generate, test, and deploy production-ready code from simple prompts.',
+      teamId: '',
+      graphCoordinates: {
+        result: 0.9,
+        method: 0.8,
+        social: 0.2,
+      }
+    },
+    {
+      id: 'helpme-study-assistant',
+      name: 'HelpMe Study Assistant',
+      shortDescription: 'AI-powered study assistant for instant academic answers.',
+      longDescription: 'HelpMe – Ask Get Learn is an AI-powered study assistant designed to provide instant, accurate answers to academic questions. Built using the Blackbox API, it simplifies complex topics into clear, understandable responses. Especially aimed at helping students in developing countries who lack access to quality educational resources.',
+      teamId: '',
+      graphCoordinates: {
+        result: 0.7,
+        method: 0.5,
+        social: 0.9,
+      }
+    },
+    {
+      id: 'codesentinel-ai',
+      name: 'CodeSentinel AI',
+      shortDescription: 'Automated code review assistant for quality and security.',
+      longDescription: 'CodeSentinel AI is an automated code review assistant designed to fix slow and error-prone manual reviews. Uses AI technologies like Meta\'s Llama 3 model and Groq API to instantly analyze code for quality, security, and performance. Provides immediate, actionable feedback to reduce project delays and improve code quality.',
+      teamId: '',
+      graphCoordinates: {
+        result: 0.8,
+        method: 0.9,
+        social: 0.3,
+      }
+    },
+    {
+      id: 'ai-developer-dashboard',
+      name: 'AI Developer Dashboard Suite',
+      shortDescription: 'Next-generation productivity platform for developers.',
+      longDescription: 'The AI Developer Dashboard Suite is a comprehensive productivity platform designed to empower developers with advanced AI-powered tools in a unified interface. Built with Next.js, Tailwind CSS, and TypeScript, offering real-time code assistance, intelligent code review, rapid prototyping, and seamless automation for testing and deployment.',
+      teamId: '',
+      graphCoordinates: {
+        result: 0.6,
+        method: 0.7,
+        social: 0.5,
       }
     },
   ]
