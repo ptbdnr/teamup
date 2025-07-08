@@ -1,6 +1,6 @@
-# TeamUP 🤝
+# >>> [DEMO SERVER ON VULTR](http://95.179.140.32:3004/) <<<
 
-# >>> [http://95.179.140.32:3004/](http://95.179.140.32:3004/) <<<
+# TeamUP 🤝
 
 **AI Agent to Form Aligned Teams**
 
