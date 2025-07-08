@@ -32,6 +32,7 @@ export default function ProjectDiscoveryPage() {
         console.log(`Swiped ${direction}`);
         if (direction === "right") {
             handleSelectProject(projects[0]);
+            return;
         }
         setProjects((prevProjects) => prevProjects.slice(1));
       };
