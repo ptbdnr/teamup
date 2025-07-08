@@ -38,6 +38,7 @@ const ProjectsGraph: React.FC<ProjectsGraphProps> = ({ projects: projects }) => 
       title: 'Joining',
       description: `You have joined the team with ID: ${teamId}.`,
       variant: 'default',
+      duration: 2000,
     });
     router.push('/team');
   };
@@ -48,6 +49,7 @@ const ProjectsGraph: React.FC<ProjectsGraphProps> = ({ projects: projects }) => 
       title: 'Creating',
       description: 'You are creating a new team for this project.',
       variant: 'default',
+      duration: 2000,
     });
     router.push('/team');
   };

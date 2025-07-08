@@ -151,14 +151,14 @@ export function ProfileForm() {
   const isProcessing = useFormStatus().pending || isTranscribing || isSynthesizing;
 
   return (
-    <div className="grid md:grid-cols-2 gap-8">
-      <Card>
+    <div className={`flex ${window.innerWidth < 768 ? 'flex flex-col' : ''} gap-8`}>
+      <Card className="flex-1">
         <CardHeader>
           <CardTitle>AI Assistant</CardTitle>
           <CardDescription>Chat with our bot to build your profile.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[400px] w-full pr-4">
+            <ScrollArea className="min-h-[250px] h-full w-full pr-4">
             <div className="space-y-4">
               <div className="flex items-start gap-4">
                 <Avatar>
@@ -214,7 +214,7 @@ export function ProfileForm() {
           <audio ref={audioRef} className="hidden" />
         </CardFooter>
       </Card>
-      <Card>
+      <Card className="flex-1">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Sparkles className="h-6 w-6 text-accent" />
@@ -223,7 +223,7 @@ export function ProfileForm() {
           <CardDescription>This is what we've gathered so far. It will be used for team matching.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[400px] w-full">
+          <ScrollArea className="h-full w-full">
             <pre className="whitespace-pre-wrap font-sans text-sm p-4 bg-muted rounded-md">{state.updatedProfileData}</pre>
           </ScrollArea>
         </CardContent>
