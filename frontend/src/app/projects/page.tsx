@@ -16,20 +16,27 @@ export default function TeamsGraphPage() {
     <div className="flex flex-col min-h-screen bg-background overflow-auto"> {/* Added overflow-auto */}
       <Header />
       <main className="flex-1 container mx-auto p-4 md:p-8">
-        <div className="mb-8">
-            <h2 className="text-3xl font-bold flex items-center gap-3 mb-4">
-                <Target className="h-8 w-16 text-primary"/>
+        <div className="flex flex-col items-center w-full mb-8">
+          <Card className="w-full max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <Target className="h-8 w-8 text-primary"/>
                 Project Ideas
-            </h2>
-            <div className="w-full max-w-2xl text-center">
-                <ProjectsGraph projects={mockupProjects} />
-            </div> 
-            <Button className="w-full" asChild size="lg">
-                <Link href="/project-discovery">
-                    <Lightbulb className="mr-2"/>
-                    See recommendations!
-                </Link>
-            </Button>
+              </CardTitle>
+              <CardDescription>
+                Explore project ideas mapped by their focus: Method & Tech, Social & Nature, Result & Control.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ProjectsGraph projects={mockupProjects} />
+            </CardContent>
+          </Card>
+          <Button className="mt-6 w-auto px-8" asChild size="lg">
+            <Link href="/project-discovery">
+              <Lightbulb className="mr-2"/>
+              See recommendations!
+            </Link>
+          </Button>
         </div>
 
         <div className="mb-8">

@@ -302,7 +302,18 @@ export function ProfileForm() {
           </ScrollArea>
         </CardContent>
         <CardFooter className="flex justify-end">
-            <Button asChild disabled={state.updatedProfileData === initialState.updatedProfileData}>
+            <Button asChild disabled={state.updatedProfileData === initialState.updatedProfileData} onClick={() => {
+                setProfile({
+                    ...profile,
+                    dataAiHint: state.updatedProfileData,
+                });
+                toast({ 
+                  variant: 'default', 
+                  title: 'Profile Updated', 
+                  description: 'Your profile has been successfully updated.',
+                  duration: 2000,
+                });
+            }}>
 
                 <Link href="/confirmation">Confirm Profile & Continue</Link>
             </Button>
