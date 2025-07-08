@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useTransition, useRef, useEffect } from 'react';
+
+import { useState, useTransition, useRef, useEffect, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { useActionState } from 'react';
 import Link from 'next/link';
+import { useProfileContext } from '@/contexts/ProfileContext';
+
 
 import { getAiProfileUpdate, transcribeAudio, synthesizeSpeech } from './actions';
 import { Button } from '@/components/ui/button';
@@ -11,22 +13,15 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 import { Mic, MicOff, Send, User, Bot, Sparkles, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import styles from './ProfileForms.module.css';
+
 
 type ChatMessage = {
   role: 'user' | 'assistant';
   content: string;
-};
-
-const initialState: {
-    error: string | null;
-    updatedProfileData: string;
-    assistantResponse?: string;
-} = {
-  error: null,
-  updatedProfileData: 'Your profile is empty. Start by telling the AI about your skills!',
-  assistantResponse: '',
 };
 
 function SubmitButton() {
@@ -38,6 +33,7 @@ function SubmitButton() {
     </Button>
   );
 }
+
 
 function humanLabel(key: string): string {
   switch (key) {
@@ -78,6 +74,18 @@ function renderProfileSummary(
 }
 
 export function ProfileForm() {
+  const { profile, isLoading, setProfile } = useProfileContext();
+  
+  const initialState: {
+    error: string | null;
+    updatedProfileData: string;
+    assistantResponse?: string;
+  } = {
+    error: null,
+    updatedProfileData: profile?.dataAiHint || 'Your profile is empty. Start by telling the AI about your skills!',
+    assistantResponse: '',
+  };
+
   const [state, formAction] = useActionState(getAiProfileUpdate, initialState);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
@@ -90,6 +98,7 @@ export function ProfileForm() {
   const didMountRef = useRef(false);
   const scrollDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -101,6 +110,7 @@ export function ProfileForm() {
       });
     }
   }, [state.error, toast]);
+
 
   const scrollToBottom = () => {
     if (chatViewportRef.current) {
@@ -137,7 +147,6 @@ export function ProfileForm() {
   useEffect(() => {
     if (state.assistantResponse && chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
         setChatHistory(prev => [...prev, { role: 'assistant', content: state.assistantResponse! }]);
-
         // TTS temporarily disabled
         // startSynthesizing(async () => {
         //   const formData = new FormData();
@@ -150,6 +159,7 @@ export function ProfileForm() {
         //       audioRef.current.play().catch(e => console.error("Audio playback failed", e));
         //   }
         // });
+
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.assistantResponse, state.updatedProfileData]);
@@ -213,6 +223,7 @@ export function ProfileForm() {
   const isProcessing = useFormStatus().pending || isTranscribing || isSynthesizing;
 
   return (
+
     <div className="grid md:grid-cols-2 gap-8">
       <Card className="flex flex-col h-[500px] md:h-[600px] overflow-hidden">
         <CardHeader>
@@ -220,7 +231,7 @@ export function ProfileForm() {
           <CardDescription>Chat with our bot to build your profile.</CardDescription>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col min-h-0">
-          <ScrollArea className="flex-1 min-h-0 w-full pr-4" viewportRef={chatViewportRef}>
+            <ScrollArea className="min-h-[250px] flex-1 min-h-0 h-full w-full pr-4" viewportRef={chatViewportRef}>
             <div className="space-y-4 h-full">
               <div className="flex items-start gap-4">
                 <Avatar>
@@ -277,7 +288,7 @@ export function ProfileForm() {
           <audio ref={audioRef} className="hidden" />
         </CardFooter>
       </Card>
-      <Card>
+      <Card className="flex-1">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Sparkles className="h-6 w-6 text-accent" />
@@ -292,6 +303,7 @@ export function ProfileForm() {
         </CardContent>
         <CardFooter className="flex justify-end">
             <Button asChild disabled={state.updatedProfileData === initialState.updatedProfileData}>
+
                 <Link href="/confirmation">Confirm Profile & Continue</Link>
             </Button>
         </CardFooter>

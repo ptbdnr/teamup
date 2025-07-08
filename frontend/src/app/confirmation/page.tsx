@@ -16,7 +16,8 @@ export default function ConfirmationPage() {
             <Timer className="mx-auto h-12 w-12 text-primary mb-4" />
             <CardTitle className="text-3xl font-bold">You're All Set!</CardTitle>
             <CardDescription className="text-lg text-muted-foreground mt-2">
-              Your profile is submitted. Teams will be formed when the timer runs out. Get ready to collaborate!
+              Your profile is submitted. Please allow others to also complete their profiles.
+              Projects will be created when the timer runs out. Get ready to collaborate!
             </CardDescription>
           </CardHeader>
           <CountdownTimer targetDate={registrationDeadline.toISOString()} />

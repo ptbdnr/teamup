@@ -1,0 +1,14 @@
+.container {
+    display: flex;
+    gap: 2rem;
+    min-height: 80vh;
+    height: 100%;
+  }
+  
+  @media (max-width: 767px) {
+    .container {
+      flex-direction: column;
+      min-height: unset;
+      height: auto;
+    }
+  }

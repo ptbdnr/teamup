@@ -10,11 +10,12 @@ import {
   Tooltip,
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Member } from '@/lib/team-data';
+
+import type { User } from '@/lib/types';
 import { BrainCircuit } from 'lucide-react';
 
 interface TeamSkillsGraphProps {
-  members: Member[];
+  members: User[];
 }
 
 export function TeamSkillsGraph({ members }: TeamSkillsGraphProps) {

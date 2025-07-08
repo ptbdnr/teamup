@@ -79,11 +79,12 @@ export function CountdownTimer({ targetDate }: CountdownTimerProps) {
                 </>
             ) : (
                 <div className="p-4 bg-muted rounded-lg">
-                    <p className="text-2xl font-bold text-primary">Matching teams...</p>
+                    <p className="text-2xl font-bold text-primary">Loading...</p>
                 </div>
             )}
         </div>
       </CardContent>
+
       {/* <CardFooter className="flex flex-col gap-4">
         <Button onClick={() => router.push('/team')} size="lg">
           Skip and See Your Team Now

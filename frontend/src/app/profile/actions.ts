@@ -37,6 +37,7 @@ export async function getAiProfileUpdate(prevState: any, formData: FormData) {
       ...validatedFields.data,
       chatHistory: chatHistoryArr,
     });
+
     return {
       error: null,
       updatedProfileData: result.updatedProfileData,
