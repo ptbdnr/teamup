@@ -1,9 +1,3 @@
-# 🚀🌐 [DEMO SERVER ON VULTR](http://95.179.140.32:3004/) 🔗
-
-**Experience TeamUP in action!**  
-Click the link above to explore our live demo server hosted on Vultr Cloud.  
-Test the features, interact with the AI, and see how TeamUP transforms collaboration! 🎉
-
 # TeamUP 🤝
 
 **AI Agent to Form Aligned Teams**
